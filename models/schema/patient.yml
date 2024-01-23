@@ -1,0 +1,74 @@
+version: 2
+
+models:
+  - name: patient
+
+    description: List of unique patients from ADT feed
+
+    config:
+      materialized: table
+
+    columns:
+      - name: patient_id
+        description: core patient_id uniquely identifying the patient
+        tests:
+         - not_null
+         - unique
+
+      - name: first_name
+        description: patient first name
+        tests:
+          - not_null
+
+      - name: last_name
+        description: patient last name
+        tests:
+          - not_null
+
+      - name: sex
+        description: patient sex taken from ADT gender
+        tests:
+          - not_null
+
+      - name: race
+        description: race taken from ADT
+
+      - name: birth_date
+        description: patient birth date taken from ADT DOB
+        tests:
+          - not_null
+
+      - name: death_date
+        description: patient date of death from ADT if discharged status is deceased
+
+      - name: death_flag
+        description: flagged 1 if death_date is present otherwise 0
+        tests:
+          - accepted_values:
+              values: [ 0, 1 ]
+
+      - name: address
+        description: patient street address
+
+      - name: city
+        description: patient city
+
+      - name: state
+        description: patient state
+
+      - name: zip_code
+        description: patient zip code
+
+      - name: county
+        description: patient county
+
+      - name: latitude
+        description: patient latitude
+
+      - name: longitude
+        description: patient longitude
+
+      - name: data_source
+        description: the description of where the data is coming from - typically 'bamboo' for Bamboo ADT feeds
+        tests:
+          - not_null

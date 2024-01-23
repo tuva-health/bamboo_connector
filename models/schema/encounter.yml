@@ -1,0 +1,100 @@
+version: 2
+
+models:
+  - name: encounter
+
+    description: List of encounters on the patient_id, encounter_id (grouped) grain
+
+    config:
+      materialized: table
+
+    columns:
+      - name: encounter_id
+        description: encounter_id specifying which enounter the condition was recorded for the recorded_date
+        tests:
+          - not_null
+          - unique
+
+      - name: patient_id
+        description: core patient_id uniquely identifying the patient
+        tests:
+         - not_null
+
+      - name: encounter_type
+        description: The type of encounter in ADT mapped to Tuva terminology in heirarchy preference (sources - Inpatient, Emergency, Skilled)
+        tests:
+          - not_null
+
+      - name: encounter_start_date
+        description: The earliest date of the encounter where the status is one of 'Admitted', 'Transferred', 'Presented'
+        tests:
+          - not_null
+
+      - name: encounter_end_date
+        description: The latest date of the encounter where the status is one of 'Closed', 'Deceased', 'Discharged'
+
+      - name: length_of_stay
+        description: The difference in days between encounter_start_date and encounter_end_date (calculated)
+
+      - name: admit_source_code
+        description: The Tuva terminology code corresponding to the admitted from location in the ADT
+        tests:
+          - not_null
+
+      - name: admit_source_description
+        description: The description in the ADT of the admitted from location, used to lookup the admit_source_code in Tuva terminology
+
+      - name: admit_type_code
+        description: NA for ADT feed -- admission type for the encounter
+
+      - name: admit_type_description
+        description: NA for ADT feed -- description of the admit type code for the encounter
+
+      - name: discharge_disposition_code
+        description:  The description in the ADT of the discharged disposition mapped to Tuva terminology
+
+      - name: discharge_disposition_description
+        description: The description in the ADT of the discharged dispotition used to map discharge_disposition_code
+
+      - name: attending_provider_id
+        description: NPI of attending provider if included in the ADT message
+
+      - name: facility_npi
+        description: NPI of the facility where the encounter occurred
+        tests:
+          - not_null
+
+      - name: primary_diagnosis_code_type
+        description: The coding system of the primary diagnosis associated with the encounter (e.g. icd-10-cm)
+
+      - name: primary_diagnosis_code
+        description: The primary diagnosis code in the coding system mapped to Tuva terminology
+
+      - name: primary_diagnosis_description
+        description: The description of the primary diagnosis code in the coding system mapped to Tuva terminology
+
+      - name: ms_drg_code
+        description: NA for ADT feeds
+
+      - name: ms_drg_description
+        description: NA for ADT feeds
+
+      - name: apr_drg_code
+        description: NA for ADT feeds
+
+      - name: apr_drg_description
+        description: NA for ADT feeds
+
+      - name: paid_amount
+        description: NA for ADT feeds
+
+      - name: allowed_amount
+        description: NA for ADT feeds
+
+      - name: charge_amount
+        description: NA for ADT feeds
+
+      - name: data_source
+        description: the description of where the data is coming from - typically 'bamboo' for Bamboo ADT feeds
+        tests:
+          - not_null
