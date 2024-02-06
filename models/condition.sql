@@ -7,7 +7,7 @@ with raw_table as (
     , "Primary Diagnosis Code"
     , "Primary Diagnosis Description"
     , "Subsequent Diagnosis Codes"
-    from {{ source('bamboo_adt','adt_raw_test') }} /** update this to adt_raw later **/
+    from {{ source('bamboo_adt','adt_raw') }}
     where patient_id in
         ( select patient_id from tuva.core.patient )
 

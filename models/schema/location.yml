@@ -17,7 +17,7 @@ models:
 
       - name: npi
         description: the NPI of the facility from the ADT feed
-        tests: 
+        tests:
           - not_null
 
       - name: name
@@ -32,7 +32,7 @@ models:
       - name: address
         description: street address of location
 
-      - name: city 
+      - name: city
         description: city of the facility
 
       - name: state
@@ -51,6 +51,3 @@ models:
         description: the description of where the data is coming from - typically 'bamboo' for Bamboo ADT feeds
         tests:
           - not_null
-
-
-
