@@ -10,7 +10,7 @@ with raw_table AS (
     , "City" as city
     , "State" as state
     , "Zip" as zip_code
-    from {{ source('bamboo_adt','adt_raw_test') }} /** update this to adt_raw later **/
+    from {{ source('bamboo_adt','adt_raw') }}
     where "Patient ID" in
         ( select patient_id from tuva.core.patient )
 

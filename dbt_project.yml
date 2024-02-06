@@ -10,6 +10,12 @@ vars:
   
   clinical_enabled: true
 
+  ed_classification_enabled: true
+
+  readmissions_enabled: true
+
+  # tuva_marts_enabled: true
+
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]

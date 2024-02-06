@@ -12,7 +12,7 @@ with raw_table as (
     , "Attending Provider NPI" as attending_provider_id
     , "Primary Diagnosis Description" primary_diagnosis_description
     , "Primary Diagnosis Code" as primary_diagnosis_code
-    from {{ source('bamboo_adt','adt_raw_test') }} /** update this to adt_raw later **/
+    from {{ source('bamboo_adt','adt_raw') }}
     where "Patient ID" IN
         ( select patient_id from tuva.core.patient )
 
@@ -41,51 +41,82 @@ collapsed_encounters as (
 ),
 
 admit_data as (
-
-    select distinct
-          collapsed_encounters.encounter_id
-        , case
-            when admitted_from = 'Home' then 1
-            when admitted_from = 'Physician Office' then 1
-            when admitted_from = 'Hospital - Emergency' then 7
-            else 9
-        end as admit_source_code
-        , raw_table.admitted_from as admit_source_description
-        , raw_table.attending_provider_id
+    select
+          encounter_id
+        , admit_source_code
+        , admit_source_description
+        , attending_provider_id
         , NULL as admit_type_code
         , NULL as admit_type_description
-    from collapsed_encounters
-    left join raw_table
-    on raw_table.encounter_id = collapsed_encounters.encounter_id
-    and raw_table.status_date = collapsed_encounters.encounter_start_date
-    and raw_table.encounter_type = collapsed_encounters.encounter_type
-    where status in ('Admitted', 'Transferred', 'Presented')
-
+    from (
+        select
+              collapsed_encounters.encounter_id
+            , case
+                when raw_table.admitted_from = 'Home' then 1
+                when raw_table.admitted_from = 'Physician Office' then 1
+                when raw_table.admitted_from = 'Hospital - Emergency' then 7
+                else 9
+              end as admit_source_code
+            , raw_table.admitted_from as admit_source_description
+            , raw_table.attending_provider_id
+            , ROW_NUMBER() over (
+                partition by collapsed_encounters.encounter_id
+                order by
+                    case raw_table.status
+                        when 'Admitted' then 1
+                        when 'Transferred' then 2
+                        when 'Presented' then 3
+                        else 4
+                    end
+            ) as rn
+        from collapsed_encounters
+        left join raw_table
+        on raw_table.encounter_id = collapsed_encounters.encounter_id
+        and raw_table.status_date = collapsed_encounters.encounter_start_date
+        and raw_table.encounter_type = collapsed_encounters.encounter_type
+        where raw_table.status in ('Admitted', 'Transferred', 'Presented')
+    ) as ranked_data
+    where rn = 1
 ),
 
 discharge_data as (
-
-    select distinct
-          collapsed_encounters.encounter_id
-        , case
-            when discharge_disposition = 'Home' then '01'
-            when discharge_disposition = 'Long-Term Acute Care Hospital' then '63'
-            when discharge_disposition = 'Assisted Living and Home Health' then '04'
-            when discharge_disposition = 'Against Medical Advice' then '07'
-            when discharge_disposition = 'Skilled Nursing Facility' then '03'
-            when discharge_disposition = 'Deceased' then '20'
-            when discharge_disposition = 'Hospital' then '02'
-            when discharge_disposition = 'Inpatient Rehabilitation Facility' then '62'
-            when discharge_disposition = 'Home - with Home Health Services' then '06'
-            else NULL
-        end as discharge_disposition_code
-        , raw_table.discharge_disposition as discharge_disposition_description
-    from collapsed_encounters
-    left join raw_table
-    on raw_table.encounter_id = collapsed_encounters.encounter_id
-    and raw_table.status_date = collapsed_encounters.encounter_end_date
-    where status IN ('Closed', 'Deceased', 'Discharged')
-
+    select
+          encounter_id
+        , discharge_disposition_code
+        , discharge_disposition_description
+    from (
+        select
+              collapsed_encounters.encounter_id
+            , case
+                when discharge_disposition = 'Home' then '01'
+                when discharge_disposition = 'Long-Term Acute Care Hospital' then '63'
+                when discharge_disposition = 'Assisted Living and Home Health' then '04'
+                when discharge_disposition = 'Against Medical Advice' then '07'
+                when discharge_disposition = 'Skilled Nursing Facility' then '03'
+                when discharge_disposition = 'Deceased' then '20'
+                when discharge_disposition = 'Hospital' then '02'
+                when discharge_disposition = 'Inpatient Rehabilitation Facility' then '62'
+                when discharge_disposition = 'Home - with Home Health Services' then '06'
+                else NULL
+              end as discharge_disposition_code
+            , raw_table.discharge_disposition as discharge_disposition_description
+            , ROW_NUMBER() over (
+                partition by collapsed_encounters.encounter_id
+                order by
+                    case raw_table.status
+                        when 'Discharged' then 1
+                        when 'Deceased' then 2
+                        when 'Closed' then 3
+                        else 4
+                    end
+            ) as rn
+        from collapsed_encounters
+        left join raw_table
+        on raw_table.encounter_id = collapsed_encounters.encounter_id
+        and raw_table.status_date = collapsed_encounters.encounter_end_date
+        where raw_table.status IN ('Closed', 'Deceased', 'Discharged')
+    ) as ranked_data
+    where rn = 1
 ),
 
 diagnosis_data as (
