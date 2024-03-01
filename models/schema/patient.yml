@@ -7,6 +7,8 @@ models:
 
     config:
       materialized: table
+      schema: input_layer
+      alias: patient      
 
     columns:
       - name: patient_id
