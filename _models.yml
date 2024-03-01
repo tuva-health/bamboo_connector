@@ -1,0 +1,58 @@
+version: 2
+
+models:
+
+  - name: condition
+    config:
+      schema: input_layer
+      alias: condition
+      materialized: table
+
+  - name: encounter
+    config:
+      schema: input_layer
+      alias: encounter
+      materialized: table
+
+  - name: lab_result
+    config:
+      schema: input_layer
+      alias: lab_result
+      materialized: table
+
+  - name: location
+    config:
+      schema: input_layer
+      alias: location
+      materialized: table
+
+  - name: medication
+    config:
+      schema: input_layer
+      alias: medication
+      materialized: table
+
+  - name: observation
+    config:
+      schema: input_layer
+      alias: observation
+      materialized: table
+
+  - name: patient
+    config:
+      schema: input_layer
+      alias: patient
+      materialized: table
+
+  - name: practitioner
+    config:
+      schema: input_layer
+      alias: practitioner
+      materialized: table
+
+  - name: procedure
+    config:
+      schema: input_layer
+      alias: procedure
+      materialized: table
+
