@@ -1,21 +1,5 @@
 with raw_table as (
-
-    select distinct
-      "Facility NPI" as facility_npi
-    , "Visit ID" as encounter_id
-    , "Status" as status
-    , "Status Date" as status_date
-    , "Setting" as encounter_type
-    , "Patient ID" as patient_id
-    , "Admitted From" as admitted_from
-    , "Discharged Disposition" as discharge_disposition
-    , "Attending Provider NPI" as attending_provider_id
-    , "Primary Diagnosis Description" primary_diagnosis_description
-    , "Primary Diagnosis Code" as primary_diagnosis_code
-    from {{ source('bamboo_adt','adt_raw') }}
-    where "Patient ID" IN
-        ( select patient_id from tuva.core.patient )
-
+    select * from {{ ref('stg_encounter') }}
 ),
 
 collapsed_encounters as (
@@ -34,7 +18,7 @@ collapsed_encounters as (
        , MAX(case when status in ('Closed', 'Deceased', 'Discharged') then status_date end) as encounter_end_date
        , DATEDIFF(day, encounter_start_date::DATE, encounter_end_date::DATE) as length_of_stay
     from
-       raw_table
+       {{ ref('stg_encounter') }}
     GROUP BY
        encounter_id, patient_id
 

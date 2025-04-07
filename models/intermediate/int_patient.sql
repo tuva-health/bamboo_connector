@@ -1,22 +1,4 @@
-with raw_table AS (
-
-    select distinct
-      "Patient ID" as patient_id
-    , "First Name" as first_name
-    , "Last Name" as last_name
-    , "Gender" as gender
-    , "DOB" as dob
-    , "Address 1" as address_1
-    , "City" as city
-    , "State" as state
-    , "Zip" as zip_code
-    from {{ source('bamboo_adt','adt_raw') }}
-    where "Patient ID" in
-        ( select patient_id from tuva.core.patient )
-
-),
-
-deduped_patient as (
+with deduped_patient as (
 
     select
           patient_id
@@ -41,21 +23,10 @@ deduped_patient as (
             , state
             , zip_code
             , row_number() over (partition by patient_id order by patient_id) as rn
-         from raw_table
+         from {{ ref('stg_patient') }}
 
          )
     where rn = 1
-
-),
-
-death_data as (
-
-    select distinct
-          "Patient ID" as patient_id
-        , 1 as death_flag
-        , "Status Date" as death_date
-    from {{ source('bamboo_adt','adt_raw_test') }} /** update this to adt_raw later **/
-    where "Status" = 'Deceased'
 
 ),
 
@@ -79,7 +50,7 @@ combined_table AS (
         , cast(NULL as {{ dbt.type_string() }} ) as longitude
         , cast('bamboo' as {{ dbt.type_string() }} ) as data_source
     from deduped_patient
-    left join death_data
+    left join {{ ref('stg_deceased_patients') }} as death_data
         on deduped_patient.patient_id = death_data.patient_id
 
 )

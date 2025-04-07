@@ -1,14 +1,4 @@
-with raw_table as (
-
-    select distinct
-      "Facility NPI" as facility_npi
-    , "Facility Name" as facility_name
-    , "Facility Type" as facility_type
-    from {{ source('bamboo_adt','adt_raw') }}
-
-),
-
-combined_table as (
+with combined_table as (
 
     select
           cast(
@@ -28,7 +18,7 @@ combined_table as (
         , cast(NULL as {{ dbt.type_string() }} ) as latitude
         , cast(NULL as {{ dbt.type_string() }} ) as longitude
         , cast('bamboo' as {{ dbt.type_string() }} ) as data_source
-    from raw_table
+    from {{ ref('stg_location') }}
     left join {{ ref('terminology__provider')}} tuva_term_provider
       on facility_npi = tuva_term_provider.npi
     where facility_name is not NULL
