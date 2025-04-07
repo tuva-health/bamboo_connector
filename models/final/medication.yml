@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: medication
+    config:
+      materialized: table
+      schema: input_layer
+      alias: medication

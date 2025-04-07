@@ -4,24 +4,25 @@ with raw_table as (
 
     select
 
-          NULL as procedure_id
-        , NULL as patient_id
-        , NULL as encounter_id
-        , NULL as claim_id
-        , NULL as procedure_date
-        , NULL as source_code_type
-        , NULL as source_code
-        , NULL as source_description
-        , NULL as normalized_code_type
-        , NULL as normalized_code
-        , NULL as normalized_description
-        , NULL as modifier_1
-        , NULL as modifier_2
-        , NULL as modifier_3
-        , NULL as modifier_4
-        , NULL as modifier_5
-        , NULL as practitioner_id
-        , NULL as data_source
+          null as procedure_id
+        , null as patient_id
+        , null as person_id
+        , null as encounter_id
+        , null as claim_id
+        , null as procedure_date
+        , null as source_code_type
+        , null as source_code
+        , null as source_description
+        , null as normalized_code_type
+        , null as normalized_code
+        , null as normalized_description
+        , null as modifier_1
+        , null as modifier_2
+        , null as modifier_3
+        , null as modifier_4
+        , null as modifier_5
+        , null as practitioner_id
+        , null as data_source
 
 )
 

@@ -10,6 +10,4 @@
     , "Attending Provider NPI" as attending_provider_id
     , "Primary Diagnosis Description" primary_diagnosis_description
     , "Primary Diagnosis Code" as primary_diagnosis_code
-    from {{ source('bamboo_adt','adt_raw') }}
-    where "Patient ID" IN
-        ( select patient_id from tuva.core.patient )
+    from {{ source('bamboo_adt','adt_raw_test') }}

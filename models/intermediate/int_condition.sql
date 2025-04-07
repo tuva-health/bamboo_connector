@@ -1,22 +1,20 @@
 with raw_table as (
-
     select distinct
-      "Patient ID" as patient_id
-    , "Visit ID" as encounter_id
-    , "Status Date" as recorded_date
-    , "Primary Diagnosis Code"
-    , "Primary Diagnosis Description"
-    , "Subsequent Diagnosis Codes"
+      patient_id
+    , encounter_id
+    , recorded_date
+    , primary_diagnosis_code
+    , primary_diagnosis_description
+    , subsequent_diagnosis_codes
     from {{ ref('stg_condition') }}
-
 ),
 
 all_codes as (
 
     select
           patient_id
-        , "Primary Diagnosis Code" as source_code
-        , "Primary Diagnosis Description" as source_description
+        , primary_diagnosis_code as source_code
+        , primary_diagnosis_description as source_description
         , recorded_date
         , encounter_id
         , 1 as condition_rank
@@ -33,7 +31,7 @@ all_codes as (
         , y.encounter_id
         , NULL as condition_rank
     from raw_table y,
-        LATERAL split_to_table(y."Subsequent Diagnosis Codes", ',') t
+        LATERAL split_to_table(y.subsequent_diagnosis_codes, ',') t
 
 ),
 
@@ -66,6 +64,7 @@ combined_table as (
                             as {{ dbt.type_string() }}
             ) as condition_id
       , cast(patient_id as {{ dbt.type_string() }} ) as patient_id
+      , cast(patient_id as {{ dbt.type_string() }}) as person_id
       , cast(encounter_id as {{ dbt.type_string() }} ) as encounter_id
       , cast(NULL as {{ dbt.type_string() }} ) as claim_id
       , {{ try_to_cast_date('recorded_date', 'MM/DD/YYYY') }} as recorded_date
@@ -78,7 +77,7 @@ combined_table as (
       , cast(source_description as {{ dbt.type_string() }} ) as source_description
       , cast('icd-10-cm' as {{ dbt.type_string() }} ) as normalized_code_type
       , cast(tuva_term_icd_10_cm.icd_10_cm as {{ dbt.type_string() }} ) as normalized_code
-      , cast(tuva_term_icd_10_cm.description as {{ dbt.type_string() }} ) as normalized_description
+      , cast(tuva_term_icd_10_cm.long_description as {{ dbt.type_string() }} ) as normalized_description
       , cast(condition_rank as {{ dbt.type_string() }} ) as condition_rank
       , cast(NULL as {{ dbt.type_string() }} ) as present_on_admit_code
       , cast(NULL as {{ dbt.type_string() }} ) as present_on_admit_description

@@ -34,10 +34,12 @@ combined_table AS (
 
     select
           cast(deduped_patient.patient_id as {{ dbt.type_string() }} ) as patient_id
+        , cast(deduped_patient.patient_id as {{ dbt.type_string() }} ) as person_id
         , cast(deduped_patient.first_name as {{ dbt.type_string() }} ) as first_name
         , cast(deduped_patient.last_name as {{ dbt.type_string() }} ) as last_name
         , cast(deduped_patient.gender as {{ dbt.type_string() }} ) as sex
         , cast(NULL as {{ dbt.type_string() }} ) as race
+        , cast(NULL as {{ dbt.type_string() }} ) as social_security_number
         , {{ try_to_cast_date('deduped_patient.dob', 'MM/DD/YYYY') }} as birth_date
         , {{ try_to_cast_date('death_data.death_date') }} as death_date
         , cast(coalesce(death_data.death_flag, 0) as {{ dbt.type_string() }} ) as death_flag

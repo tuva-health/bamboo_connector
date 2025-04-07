@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: procedure
+    config:
+      materialized: table
+      schema: input_layer
+      alias: procedure

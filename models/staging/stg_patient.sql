@@ -8,4 +8,4 @@
     , "City" as city
     , "State" as state
     , "Zip" as zip_code
-    from {{ source('bamboo_adt','adt_raw') }}
+    from {{ source('bamboo_adt','adt_raw_test') }}

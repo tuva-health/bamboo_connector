@@ -7,7 +7,7 @@ with combined_table as (
                         , coalesce(facility_name, '')))
                         as {{ dbt.type_string() }}
                ) as location_id
-        , cast(facility_type as {{ dbt.type_string() }} ) as npi
+        , cast(facility_npi as {{ dbt.type_string() }} ) as npi
         , cast(facility_name as {{ dbt.type_string() }} ) as name
         , cast(facility_type as {{ dbt.type_string() }} ) as facility_type
         , cast(tuva_term_provider.parent_organization_name as {{ dbt.type_string() }} ) as parent_organization
@@ -26,4 +26,16 @@ with combined_table as (
 
 )
 
+/*
+In some cases, we need to break ties at the same location where there are
+multiple facility types per location. Here we assume that any facility
+type that is not "Unknown" is higher value to us than an "Unknown" status
+*/
 select * from combined_table
+qualify row_number() over (
+  partition by location_id 
+  order by 
+    case when facility_type = 'Unknown' then 0 
+    else 1 end
+  desc
+) = 1

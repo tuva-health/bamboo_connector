@@ -4,27 +4,28 @@ with raw_table as (
 
     select 
 
-          NULL as medication_id
-        , NULL as patient_id
-        , NULL as encounter_id
-        , NULL as dispensing_date
-        , NULL as prescribing_date
-        , NULL as source_code_type
-        , NULL as source_code
-        , NULL as source_description
-        , NULL as ndc_code
-        , NULL as ndc_description
-        , NULL as rxnorm_code
-        , NULL as rxnorm_description
-        , NULL as atc_code
-        , NULL as atc_description
-        , NULL as route
-        , NULL as strength
-        , NULL as quantity
-        , NULL as quantity_unit
-        , NULL as days_supply
-        , NULL as practitioner_id
-        , NULL as data_source
+          null as medication_id
+        , null as patient_id
+        , null as person_id
+        , null as encounter_id
+        , null as dispensing_date
+        , null as prescribing_date
+        , null as source_code_type
+        , null as source_code
+        , null as source_description
+        , null as ndc_code
+        , null as ndc_description
+        , null as rxnorm_code
+        , null as rxnorm_description
+        , null as atc_code
+        , null as atc_description
+        , null as route
+        , null as strength
+        , null as quantity
+        , null as quantity_unit
+        , null as days_supply
+        , null as practitioner_id
+        , null as data_source
 
 )
 

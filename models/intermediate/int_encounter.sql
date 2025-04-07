@@ -142,7 +142,7 @@ diagnosis_data_mapped as (
           diagnosis_data.encounter_id
         , diagnosis_data.primary_diagnosis_code_type
         , tuva_term_icd_10_cm.icd_10_cm as primary_diagnosis_code
-        , tuva_term_icd_10_cm.description as primary_diagnosis_description
+        , tuva_term_icd_10_cm.long_description as primary_diagnosis_description
     from diagnosis_data
     left join {{ ref('terminology__icd_10_cm')}} tuva_term_icd_10_cm
         on tuva_term_icd_10_cm.icd_10_cm = diagnosis_data.primary_diagnosis_code
@@ -154,6 +154,7 @@ combined_table as (
     select
           cast(collapsed_encounters.encounter_id as {{ dbt.type_string() }} ) as encounter_id
         , cast(collapsed_encounters.patient_id as {{ dbt.type_string() }} ) as patient_id
+        , cast(collapsed_encounters.patient_id as {{ dbt.type_string() }}) as person_id
         , cast (
             case
             when collapsed_encounters.encounter_type = 'Inpatient' then 'acute inpatient'

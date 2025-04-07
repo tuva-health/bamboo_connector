@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: lab_result
+    config:
+      materialized: table
+      schema: input_layer
+      alias: lab_result

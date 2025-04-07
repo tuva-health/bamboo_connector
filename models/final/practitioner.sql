@@ -14,6 +14,6 @@ select
   , cast(tuva_term_provider.primary_specialty_description as {{ dbt.type_string() }} ) as specialty
   , cast(NULL as {{ dbt.type_string() }} ) as sub_specialty
   , cast('bamboo' as {{ dbt.type_string() }} ) as data_source
-FROM {{ ref('stg_practitioner') }}
+FROM {{ ref('stg_practitioner') }} as raw_table
 left join {{ ref('terminology__provider')}} tuva_term_provider
   on attending_provider_npi = tuva_term_provider.npi

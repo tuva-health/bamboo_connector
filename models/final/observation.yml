@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: observation
+    config:
+      materialized: table
+      schema: input_layer
+      alias: observation
