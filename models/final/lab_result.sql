@@ -2,8 +2,7 @@
 
 with raw_table as (
 
-    select 
-
+    select
       null as lab_result_id
     , null as patient_id
     , null as person_id
@@ -35,4 +34,7 @@ with raw_table as (
 
 )
 
-select * from raw_table
+select {% if target.type == 'fabric' %} top 0 {% else %}{% endif %}
+  * 
+from raw_table
+{% if target.type == 'fabric' %} {% else %} limit 0 {% endif %}

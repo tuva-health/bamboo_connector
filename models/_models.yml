@@ -1,0 +1,424 @@
+version: 2
+
+models:
+
+### final
+  - name: condition
+    description: List of patient conditions. Unique on the patient, visit, code grain.
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
+      materialized: table
+    columns:
+      - name: condition_id
+        description: unique ID for the combination of patient_id, encounter_id and source_code
+        tests: 
+         - not_null
+         - unique
+
+      - name: patient_id
+        description: core patient_id uniquely identifying the patient 
+        tests: 
+         - not_null
+
+      - name: encounter_id
+        description: encounter_id specifying which enounter the condition was recorded for the recorded_date
+        tests: 
+          - not_null
+
+      - name: claim_id
+        description: NA for ADT feeds -- ID of the claim the condition was present in
+
+      - name: recorded_date
+        description: the date which the condition was recorded 
+        tests:
+          - not_null
+
+      - name: onset_date
+        description: NA for ADT feeds -- the first date the condition was recorded 
+
+      - name: resolved_date
+        description: NA for ADT feeds -- the date the condition was observed as resolved 
+
+      - name: status
+        description: NA for ADT feeds -- status of the condition
+
+      - name: condition_type
+        description: NA for ADT feeds -- status of condition (problem, admitting, billing)
+
+      - name: source_code_type
+        description: the coding system in use (e.g. icd-10-cm)
+        tests: 
+          - not_null
+
+      - name: source_code
+        description: the condition code from the coding system
+        tests: 
+          - not_null
+
+      - name: source_description
+        description: description of the code from the source data
+
+      - name: normalized_code_type
+        description: the coding system used in mapping to Tuva terminology
+        tests:
+          - not_null
+
+      - name: normalized_code 
+        description: the mapped code for the condition in the normalized_code_type coding system
+
+      - name: normalized_description
+        description: the mapped description of the condition in the normalized_code_type coding system
+
+      - name: condition_rank
+        description: for ADT feeds this is rank 1 if the condition is the primary diagnosis on the encounter and NULL otherwise
+
+      - name: present_on_admit_code
+        description: NA for ADT feeds -- condition code if present on admit 
+
+      - name: present_on_admit_description
+        description: NA for ADT feeds -- description of the present_on_admit_code if available
+
+      - name: data_source
+        description: the description of where the data is coming from - typically 'bamboo' for Bamboo ADT feeds
+        tests: 
+          - not_null
+
+
+  - name: encounter
+    description: List of encounters on the patient_id, encounter_id (grouped) grain
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
+      materialized: table
+    columns:
+      - name: encounter_id
+        description: encounter_id specifying which enounter the condition was recorded for the recorded_date
+        tests:
+          - not_null
+          - unique
+
+      - name: patient_id
+        description: core patient_id uniquely identifying the patient
+        tests:
+         - not_null
+
+      - name: encounter_type
+        description: The type of encounter in ADT mapped to Tuva terminology in heirarchy preference (sources - Inpatient, Emergency, Skilled)
+        tests:
+          - not_null
+
+      - name: encounter_start_date
+        description: The earliest date of the encounter where the status is one of 'Admitted', 'Transferred', 'Presented'
+        tests:
+          - not_null
+
+      - name: encounter_end_date
+        description: The latest date of the encounter where the status is one of 'Closed', 'Deceased', 'Discharged'
+
+      - name: length_of_stay
+        description: The difference in days between encounter_start_date and encounter_end_date (calculated)
+
+      - name: admit_source_code
+        description: The Tuva terminology code corresponding to the admitted from location in the ADT
+        tests:
+          - not_null
+
+      - name: admit_source_description
+        description: The description in the ADT of the admitted from location, used to lookup the admit_source_code in Tuva terminology
+
+      - name: admit_type_code
+        description: NA for ADT feed -- admission type for the encounter
+
+      - name: admit_type_description
+        description: NA for ADT feed -- description of the admit type code for the encounter
+
+      - name: discharge_disposition_code
+        description:  The description in the ADT of the discharged disposition mapped to Tuva terminology
+
+      - name: discharge_disposition_description
+        description: The description in the ADT of the discharged dispotition used to map discharge_disposition_code
+
+      - name: attending_provider_id
+        description: NPI of attending provider if included in the ADT message
+
+      - name: facility_npi
+        description: NPI of the facility where the encounter occurred
+        tests:
+          - not_null
+
+      - name: primary_diagnosis_code_type
+        description: The coding system of the primary diagnosis associated with the encounter (e.g. icd-10-cm)
+
+      - name: primary_diagnosis_code
+        description: The primary diagnosis code in the coding system mapped to Tuva terminology
+
+      - name: primary_diagnosis_description
+        description: The description of the primary diagnosis code in the coding system mapped to Tuva terminology
+
+      - name: drg_code
+        description: NA for ADT feeds
+
+      - name: drg_description
+        description: NA for ADT feeds
+
+      - name: drg_code_type
+        description: NA for ADT feeds
+
+      - name: paid_amount
+        description: NA for ADT feeds
+
+      - name: allowed_amount
+        description: NA for ADT feeds
+
+      - name: charge_amount
+        description: NA for ADT feeds
+
+      - name: data_source
+        description: the description of where the data is coming from - typically 'bamboo' for Bamboo ADT feeds
+        tests:
+          - not_null
+  
+  - name: lab_result
+    config:
+      materialized: table
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
+
+  - name: location
+
+    description: List of Facility Locations in the ADT feed
+
+    config:
+      materialized: table
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}     
+
+    columns:
+      - name: location_id
+        description: unique location ID for each location in the feed mapped by NPI and Name
+        tests:
+          - not_null
+          - unique
+
+      - name: npi
+        description: the NPI of the facility from the ADT feed
+        tests: 
+          - not_null
+
+      - name: name
+        description: name of the facility pulled from the ADT feed
+
+      - name: facility_type
+        description: type of facility like (e.g. acute care hospital)
+
+      - name: parent_organization
+        description: Name of the parent organization if any
+
+      - name: address
+        description: street address of location
+
+      - name: city 
+        description: city of the facility
+
+      - name: state
+        description: state of the facility
+
+      - name: zip_code
+        description: zip code of the facility
+
+      - name: latitude
+        description: latitude of the facility
+
+      - name: longitude
+        description: longitude of the facility
+
+      - name: data_source
+        description: the description of where the data is coming from - typically 'bamboo' for Bamboo ADT feeds
+        tests:
+          - not_null
+
+  - name: medication
+    config:
+      materialized: table
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
+
+  - name: observation
+    config:
+      materialized: table
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
+
+
+  - name: patient
+    description: List of unique patients from ADT feed
+    config:
+      materialized: table
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}    
+    columns:
+      - name: patient_id
+        description: core patient_id uniquely identifying the patient
+        tests:
+         - not_null
+         - unique
+
+      - name: first_name
+        description: patient first name
+        tests:
+          - not_null
+
+      - name: last_name
+        description: patient last name
+        tests:
+          - not_null
+
+      - name: sex
+        description: patient sex taken from ADT gender
+        tests:
+          - not_null
+
+      - name: race
+        description: race taken from ADT
+
+      - name: birth_date
+        description: patient birth date taken from ADT DOB
+        tests:
+          - not_null
+
+      - name: death_date
+        description: patient date of death from ADT if discharged status is deceased
+
+      - name: death_flag
+        description: flagged 1 if death_date is present otherwise 0
+        tests:
+          - accepted_values:
+              values: [ 0, 1 ]
+
+      - name: address
+        description: patient street address
+
+      - name: city
+        description: patient city
+
+      - name: state
+        description: patient state
+
+      - name: zip_code
+        description: patient zip code
+
+      - name: county
+        description: patient county
+
+      - name: latitude
+        description: patient latitude
+
+      - name: longitude
+        description: patient longitude
+
+      - name: data_source
+        description: the description of where the data is coming from - typically 'bamboo' for Bamboo ADT feeds
+        tests:
+          - not_null
+  
+  - name: practitioner
+
+    description: List of unique practitioners from ADT feed
+
+    config:
+      materialized: table
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}     
+
+    columns:
+      - name: practitioner_id
+        description: unique practitioner id from NPI, first name and last name
+        tests:
+         - not_null
+         - unique
+
+      - name: npi
+        description: NPI of attending practitioner from ADT feed
+
+      - name: first_name
+        description: practitioner first name
+        tests:
+          - not_null
+
+      - name: last_name
+        description: practitioner last name
+        tests:
+          - not_null
+
+      - name: practice_affiliation
+        description: the practice the practitioner is primarily affiliated with
+
+      - name: specialty
+        description: the practitioners primary medical speciality
+
+      - name: sub_specialty
+        description: the practitioners sub speciality
+
+      - name: data_source
+        description: the description of where the data is coming from - typically 'bamboo' for Bamboo ADT feeds
+        tests:
+          - not_null
+
+  - name: procedure
+    config:
+      materialized: table
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
+
+### intermediate
+  - name: int_condition
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+
+  - name: int_encounter
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+
+  - name: int_patient
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+
+  - name: int_practitioner
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+
+### staging
+  - name: stg_condition
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+
+  - name: stg_deceased_patients
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+
+  - name: stg_encounter
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+
+  - name: stg_location
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+
+  - name: stg_patient
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+
+  - name: stg_practitioner
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
