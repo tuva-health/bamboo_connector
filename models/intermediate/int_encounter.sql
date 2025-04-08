@@ -30,6 +30,8 @@ admit_data as (
         , admit_source_code
         , admit_source_description
         , attending_provider_id
+        , attending_provider_first_name
+        , attending_provider_last_name
         , null as admit_type_code
         , null as admit_type_description
     from (
@@ -43,7 +45,9 @@ admit_data as (
               end as admit_source_code
             , raw_table.admitted_from as admit_source_description
             , raw_table.attending_provider_id
-            , ROW_NUMBER() over (
+            , raw_table.attending_provider_first_name
+            , raw_table.attending_provider_last_name            
+            , row_number() over (
                 partition by collapsed_encounters.encounter_id
                 order by
                     case raw_table.status
@@ -133,6 +137,7 @@ facility_data as (
     select distinct
           encounter_id
         , facility_npi
+        , facility_name
     from raw_table
 ),
 
@@ -172,8 +177,11 @@ combined_table as (
         , cast(discharge_data.discharge_disposition_code as {{ dbt.type_string() }} ) as discharge_disposition_code
         , cast(discharge_data.discharge_disposition_description as {{ dbt.type_string() }} ) as discharge_disposition_description
         , cast(admit_data.attending_provider_id as {{ dbt.type_string() }} ) as attending_provider_id
+        , cast(admit_data.attending_provider_first_name || ' ' 
+            || admit_data.attending_provider_last_name as {{ dbt.type_string() }}) as attending_provider_name
         , cast(facility_data.facility_npi as {{ dbt.type_string() }} ) as facility_npi
         , cast(facility_data.facility_npi as {{ dbt.type_string() }} ) as facility_id
+        , cast(facility_data.facility_name as {{ dbt.type_string() }} ) as facility_name
         , cast(diagnosis_data_mapped.primary_diagnosis_code_type as {{ dbt.type_string() }} ) as primary_diagnosis_code_type
         , cast(diagnosis_data_mapped.primary_diagnosis_code as {{ dbt.type_string() }} ) as primary_diagnosis_code
         , cast(diagnosis_data_mapped.primary_diagnosis_description as {{ dbt.type_string() }} ) as primary_diagnosis_description

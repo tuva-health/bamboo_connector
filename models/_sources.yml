@@ -5,4 +5,4 @@ sources:
     database: "{{ var('input_database') }}"
     schema:  "{{ var('input_schema') }}"
     tables:
-      - name: adt_raw_test
+      - name: adt_raw
