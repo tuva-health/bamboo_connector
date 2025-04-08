@@ -8,7 +8,7 @@ models:
     config:
       materialized: table
       schema: input_layer
-      alias: condition      
+      alias: condition
 
     columns:
       - name: condition_id

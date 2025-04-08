@@ -30,8 +30,8 @@ admit_data as (
         , admit_source_code
         , admit_source_description
         , attending_provider_id
-        , NULL as admit_type_code
-        , NULL as admit_type_description
+        , null as admit_type_code
+        , null as admit_type_description
     from (
         select
               collapsed_encounters.encounter_id
@@ -81,7 +81,7 @@ discharge_data as (
                 when discharge_disposition = 'Hospital' then '02'
                 when discharge_disposition = 'Inpatient Rehabilitation Facility' then '62'
                 when discharge_disposition = 'Home - with Home Health Services' then '06'
-                else NULL
+                else null
               end as discharge_disposition_code
             , raw_table.discharge_disposition as discharge_disposition_description
             , ROW_NUMBER() over (
@@ -173,16 +173,16 @@ combined_table as (
         , cast(discharge_data.discharge_disposition_description as {{ dbt.type_string() }} ) as discharge_disposition_description
         , cast(admit_data.attending_provider_id as {{ dbt.type_string() }} ) as attending_provider_id
         , cast(facility_data.facility_npi as {{ dbt.type_string() }} ) as facility_npi
+        , cast(facility_data.facility_npi as {{ dbt.type_string() }} ) as facility_id
         , cast(diagnosis_data_mapped.primary_diagnosis_code_type as {{ dbt.type_string() }} ) as primary_diagnosis_code_type
         , cast(diagnosis_data_mapped.primary_diagnosis_code as {{ dbt.type_string() }} ) as primary_diagnosis_code
         , cast(diagnosis_data_mapped.primary_diagnosis_description as {{ dbt.type_string() }} ) as primary_diagnosis_description
-        , cast(NULL as {{ dbt.type_string() }} ) as ms_drg_code
-        , cast(NULL as {{ dbt.type_string() }} ) as ms_drg_description
-        , cast(NULL as {{ dbt.type_string() }} ) as apr_drg_code
-        , cast(NULL as {{ dbt.type_string() }} ) as apr_drg_description
-        , cast(NULL as {{ dbt.type_string() }} ) as paid_amount
-        , cast(NULL as {{ dbt.type_string() }} ) as allowed_amount
-        , cast(NULL as {{ dbt.type_string() }} ) as charge_amount
+        , cast(null as {{ dbt.type_string() }} ) as drg_code
+        , cast(null as {{ dbt.type_string() }} ) as drg_code_type
+        , cast(null as {{ dbt.type_string() }} ) as drg_code_description
+        , cast(null as {{ dbt.type_string() }} ) as paid_amount
+        , cast(null as {{ dbt.type_string() }} ) as allowed_amount
+        , cast(null as {{ dbt.type_string() }} ) as charge_amount
         , cast('bamboo' as {{ dbt.type_string() }} ) as data_source
     from collapsed_encounters
     left join admit_data

@@ -38,8 +38,9 @@ combined_table AS (
         , cast(deduped_patient.first_name as {{ dbt.type_string() }} ) as first_name
         , cast(deduped_patient.last_name as {{ dbt.type_string() }} ) as last_name
         , cast(deduped_patient.gender as {{ dbt.type_string() }} ) as sex
-        , cast(NULL as {{ dbt.type_string() }} ) as race
-        , cast(NULL as {{ dbt.type_string() }} ) as social_security_number
+        , cast(null as {{ dbt.type_string() }} ) as race
+        , cast(null as {{ dbt.type_string() }} ) as social_security_number
+        , cast(null as {{dbt.type_string() }}) as phone
         , {{ try_to_cast_date('deduped_patient.dob', 'MM/DD/YYYY') }} as birth_date
         , {{ try_to_cast_date('death_data.death_date') }} as death_date
         , cast(coalesce(death_data.death_flag, 0) as {{ dbt.type_string() }} ) as death_flag
@@ -47,9 +48,9 @@ combined_table AS (
         , cast(deduped_patient.city as {{ dbt.type_string() }} ) as city
         , cast(deduped_patient.state as {{ dbt.type_string() }} ) as state
         , cast(deduped_patient.zip_code as {{ dbt.type_string() }} ) as zip_code
-        , cast(NULL as {{ dbt.type_string() }} ) as county
-        , cast(NULL as {{ dbt.type_string() }} ) as latitude
-        , cast(NULL as {{ dbt.type_string() }} ) as longitude
+        , cast(null as {{ dbt.type_string() }} ) as county
+        , cast(null as {{ dbt.type_string() }} ) as latitude
+        , cast(null as {{ dbt.type_string() }} ) as longitude
         , cast('bamboo' as {{ dbt.type_string() }} ) as data_source
     from deduped_patient
     left join {{ ref('stg_deceased_patients') }} as death_data
