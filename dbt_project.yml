@@ -1,5 +1,5 @@
 name: 'bamboo_connector'
-version: '0.1.0'
+version: '0.1.1'
 config-version: 2
 
 profile: 'default'
@@ -9,11 +9,8 @@ vars:
   input_schema: raw_data
   
   clinical_enabled: true
-
   ed_classification_enabled: true
-
   readmissions_enabled: true
-
   # tuva_marts_enabled: true
 
 model-paths: ["models"]

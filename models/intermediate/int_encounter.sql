@@ -1,21 +1,5 @@
 with raw_table as (
-
-    select distinct
-      "Facility NPI" as facility_npi
-    , "Visit ID" as encounter_id
-    , "Status" as status
-    , "Status Date" as status_date
-    , "Setting" as encounter_type
-    , "Patient ID" as patient_id
-    , "Admitted From" as admitted_from
-    , "Discharged Disposition" as discharge_disposition
-    , "Attending Provider NPI" as attending_provider_id
-    , "Primary Diagnosis Description" primary_diagnosis_description
-    , "Primary Diagnosis Code" as primary_diagnosis_code
-    from {{ source('bamboo_adt','adt_raw') }}
-    where "Patient ID" IN
-        ( select patient_id from tuva.core.patient )
-
+    select * from {{ ref('stg_encounter') }}
 ),
 
 collapsed_encounters as (
@@ -34,7 +18,7 @@ collapsed_encounters as (
        , MAX(case when status in ('Closed', 'Deceased', 'Discharged') then status_date end) as encounter_end_date
        , DATEDIFF(day, encounter_start_date::DATE, encounter_end_date::DATE) as length_of_stay
     from
-       raw_table
+       {{ ref('stg_encounter') }}
     GROUP BY
        encounter_id, patient_id
 
@@ -46,8 +30,10 @@ admit_data as (
         , admit_source_code
         , admit_source_description
         , attending_provider_id
-        , NULL as admit_type_code
-        , NULL as admit_type_description
+        , attending_provider_first_name
+        , attending_provider_last_name
+        , null as admit_type_code
+        , null as admit_type_description
     from (
         select
               collapsed_encounters.encounter_id
@@ -59,7 +45,9 @@ admit_data as (
               end as admit_source_code
             , raw_table.admitted_from as admit_source_description
             , raw_table.attending_provider_id
-            , ROW_NUMBER() over (
+            , raw_table.attending_provider_first_name
+            , raw_table.attending_provider_last_name            
+            , row_number() over (
                 partition by collapsed_encounters.encounter_id
                 order by
                     case raw_table.status
@@ -97,7 +85,7 @@ discharge_data as (
                 when discharge_disposition = 'Hospital' then '02'
                 when discharge_disposition = 'Inpatient Rehabilitation Facility' then '62'
                 when discharge_disposition = 'Home - with Home Health Services' then '06'
-                else NULL
+                else null
               end as discharge_disposition_code
             , raw_table.discharge_disposition as discharge_disposition_description
             , ROW_NUMBER() over (
@@ -149,6 +137,7 @@ facility_data as (
     select distinct
           encounter_id
         , facility_npi
+        , facility_name
     from raw_table
 ),
 
@@ -158,7 +147,7 @@ diagnosis_data_mapped as (
           diagnosis_data.encounter_id
         , diagnosis_data.primary_diagnosis_code_type
         , tuva_term_icd_10_cm.icd_10_cm as primary_diagnosis_code
-        , tuva_term_icd_10_cm.description as primary_diagnosis_description
+        , tuva_term_icd_10_cm.long_description as primary_diagnosis_description
     from diagnosis_data
     left join {{ ref('terminology__icd_10_cm')}} tuva_term_icd_10_cm
         on tuva_term_icd_10_cm.icd_10_cm = diagnosis_data.primary_diagnosis_code
@@ -170,6 +159,7 @@ combined_table as (
     select
           cast(collapsed_encounters.encounter_id as {{ dbt.type_string() }} ) as encounter_id
         , cast(collapsed_encounters.patient_id as {{ dbt.type_string() }} ) as patient_id
+        , cast(collapsed_encounters.patient_id as {{ dbt.type_string() }}) as person_id
         , cast (
             case
             when collapsed_encounters.encounter_type = 'Inpatient' then 'acute inpatient'
@@ -187,17 +177,20 @@ combined_table as (
         , cast(discharge_data.discharge_disposition_code as {{ dbt.type_string() }} ) as discharge_disposition_code
         , cast(discharge_data.discharge_disposition_description as {{ dbt.type_string() }} ) as discharge_disposition_description
         , cast(admit_data.attending_provider_id as {{ dbt.type_string() }} ) as attending_provider_id
+        , cast(admit_data.attending_provider_first_name || ' ' 
+            || admit_data.attending_provider_last_name as {{ dbt.type_string() }}) as attending_provider_name
         , cast(facility_data.facility_npi as {{ dbt.type_string() }} ) as facility_npi
+        , cast(facility_data.facility_npi as {{ dbt.type_string() }} ) as facility_id
+        , cast(facility_data.facility_name as {{ dbt.type_string() }} ) as facility_name
         , cast(diagnosis_data_mapped.primary_diagnosis_code_type as {{ dbt.type_string() }} ) as primary_diagnosis_code_type
         , cast(diagnosis_data_mapped.primary_diagnosis_code as {{ dbt.type_string() }} ) as primary_diagnosis_code
         , cast(diagnosis_data_mapped.primary_diagnosis_description as {{ dbt.type_string() }} ) as primary_diagnosis_description
-        , cast(NULL as {{ dbt.type_string() }} ) as ms_drg_code
-        , cast(NULL as {{ dbt.type_string() }} ) as ms_drg_description
-        , cast(NULL as {{ dbt.type_string() }} ) as apr_drg_code
-        , cast(NULL as {{ dbt.type_string() }} ) as apr_drg_description
-        , cast(NULL as {{ dbt.type_string() }} ) as paid_amount
-        , cast(NULL as {{ dbt.type_string() }} ) as allowed_amount
-        , cast(NULL as {{ dbt.type_string() }} ) as charge_amount
+        , cast(null as {{ dbt.type_string() }} ) as drg_code
+        , cast(null as {{ dbt.type_string() }} ) as drg_code_type
+        , cast(null as {{ dbt.type_string() }} ) as drg_description
+        , cast(null as {{ dbt.type_string() }} ) as paid_amount
+        , cast(null as {{ dbt.type_string() }} ) as allowed_amount
+        , cast(null as {{ dbt.type_string() }} ) as charge_amount
         , cast('bamboo' as {{ dbt.type_string() }} ) as data_source
     from collapsed_encounters
     left join admit_data
