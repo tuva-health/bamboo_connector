@@ -27,4 +27,13 @@ clean-targets:
 
 models:
   bamboo_connector:
+    staging:
+      +materialized: view
+      +schema: bamboo_staging
+    intermediate:
+      +materialized: table
+      +schema: bamboo_intermediate
+    final:
+      +materialized: table
+      +schema: input_layer
 
