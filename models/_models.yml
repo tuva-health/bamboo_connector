@@ -173,11 +173,7 @@ models:
   
   - name: lab_result
   - name: location
-
     description: List of Facility Locations in the ADT feed
-
-    config:     
-
     columns:
       - name: location_id
         description: unique location ID for each location in the feed mapped by NPI and Name
@@ -228,8 +224,6 @@ models:
 
   - name: patient
     description: List of unique patients from ADT feed
-    config:    
-      tags: input_layer
     columns:
       - name: patient_id
         description: core patient_id uniquely identifying the patient
@@ -298,9 +292,6 @@ models:
   - name: practitioner
 
     description: List of unique practitioners from ADT feed
-
-    config:     
-      tags: input_layer
     columns:
       - name: practitioner_id
         description: unique practitioner id from NPI, first name and last name
