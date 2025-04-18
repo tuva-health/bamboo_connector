@@ -30,10 +30,13 @@ models:
     staging:
       +materialized: view
       +schema: bamboo_staging
+      +tags: input_layer
     intermediate:
       +materialized: table
       +schema: bamboo_intermediate
+      +tags: input_layer
     final:
       +materialized: table
       +schema: input_layer
+      +tags: input_layer
 
