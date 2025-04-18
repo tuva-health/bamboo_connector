@@ -5,3 +5,4 @@ dbt_modules/
 release_notes/
 .idea/
 .DS_Store
+venv/

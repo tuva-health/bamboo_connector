@@ -5,11 +5,6 @@ models:
 ### final
   - name: condition
     description: List of patient conditions. Unique on the patient, visit, code grain.
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
-      tags: input_layer
-      materialized: table
     columns:
       - name: condition_id
         description: unique ID for the combination of patient_id, encounter_id and source_code
@@ -88,11 +83,6 @@ models:
 
   - name: encounter
     description: List of encounters on the patient_id, encounter_id (grouped) grain
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
-      tags: input_layer
-      materialized: table
     columns:
       - name: encounter_id
         description: encounter_id specifying which enounter the condition was recorded for the recorded_date
@@ -182,20 +172,8 @@ models:
           - not_null
   
   - name: lab_result
-    config:
-      materialized: table
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
-      tags: input_layer
   - name: location
-
     description: List of Facility Locations in the ADT feed
-
-    config:
-      materialized: table
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}     
-
     columns:
       - name: location_id
         description: unique location ID for each location in the feed mapped by NPI and Name
@@ -241,26 +219,11 @@ models:
           - not_null
 
   - name: medication
-    config:
-      materialized: table
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
-      tags: input_layer
 
   - name: observation
-    config:
-      materialized: table
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
-      tags: input_layer
 
   - name: patient
     description: List of unique patients from ADT feed
-    config:
-      materialized: table
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}    
-      tags: input_layer
     columns:
       - name: patient_id
         description: core patient_id uniquely identifying the patient
@@ -329,12 +292,6 @@ models:
   - name: practitioner
 
     description: List of unique practitioners from ADT feed
-
-    config:
-      materialized: table
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}     
-      tags: input_layer
     columns:
       - name: practitioner_id
         description: unique practitioner id from NPI, first name and last name
@@ -370,70 +327,25 @@ models:
           - not_null
 
   - name: procedure
-    config:
-      materialized: table
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
-      tags: input_layer
 
 ### intermediate
   - name: int_condition
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
-      tags: input_layer
 
   - name: int_encounter
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
-      tags: input_layer
 
   - name: int_patient
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
-      tags: input_layer
 
   - name: int_practitioner
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
-      tags: input_layer
 
 ### staging
   - name: stg_condition
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
-      tags: input_layer
 
   - name: stg_deceased_patients
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
-      tags: input_layer
 
   - name: stg_encounter
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
-      tags: input_layer
 
   - name: stg_location
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
-      tags: input_layer
 
   - name: stg_patient
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
-      tags: input_layer
 
   - name: stg_practitioner
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
-      tags: input_layer
