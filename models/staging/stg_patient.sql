@@ -1,4 +1,4 @@
-    select distinct
+ select distinct
       "Patient ID" as patient_id
     , "First Name" as first_name
     , "Last Name" as last_name

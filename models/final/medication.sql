@@ -2,7 +2,7 @@
 
 with raw_table as (
 
-    select 
+    select
 
           null as medication_id
         , null as patient_id
@@ -30,6 +30,6 @@ with raw_table as (
 )
 
 select {% if target.type == 'fabric' %} top 0 {% else %}{% endif %} 
-  * 
+  *
 from raw_table
 {% if target.type == 'fabric' %} {% else %} limit 0 {% endif %}
