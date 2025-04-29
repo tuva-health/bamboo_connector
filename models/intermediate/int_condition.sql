@@ -31,7 +31,7 @@ all_codes as (
         , y.encounter_id
         , null as condition_rank
     from raw_table as y,
-        lateral as split_to_table(y.subsequent_diagnosis_codes, ',') t
+        lateral split_to_table(y.subsequent_diagnosis_codes, ',') t
 
 ),
 
