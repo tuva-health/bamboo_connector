@@ -1,4 +1,4 @@
-    select distinct
+ select distinct
       "Facility NPI" as facility_npi
     , "Facility Name" as facility_name
     , "Visit ID" as encounter_id
@@ -11,6 +11,6 @@
     , "Attending Provider NPI" as attending_provider_id
     , "Attending Provider First Name" as attending_provider_first_name
     , "Attending Provider Last Name" as attending_provider_last_name
-    , "Primary Diagnosis Description" primary_diagnosis_description
+    , "Primary Diagnosis Description" as primary_diagnosis_description
     , "Primary Diagnosis Code" as primary_diagnosis_code
     from {{ source('bamboo_adt','adt_raw') }}
